@@ -108,6 +108,11 @@ class DownloaderApp:
         root.geometry("640x600")
         root.minsize(640, 600)
         root.configure(bg=BG_MAIN)
+        try:
+            base = sys._MEIPASS if getattr(sys, "frozen", False) else _APP_DIR
+            root.iconbitmap(os.path.join(base, "icon.ico"))
+        except Exception:
+            pass
 
         self.output_dir = tk.StringVar(value=DEFAULT_OUTPUT_DIR)
         self.status_var = tk.StringVar(value="請貼上 YouTube 網址後按下載")

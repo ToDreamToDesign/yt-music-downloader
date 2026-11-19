@@ -3,6 +3,8 @@ Set-Location $PSScriptRoot
 $ffdir = Split-Path (Get-Command ffmpeg).Source
 python -m PyInstaller --noconfirm --clean --onefile --windowed `
     --name "YT-Music-Downloader" `
+    --icon icon.ico `
+    --add-data "icon.ico;." `
     --add-binary "$ffdir\ffmpeg.exe;ffmpeg_bin" `
     --add-binary "$ffdir\ffprobe.exe;ffmpeg_bin" `
     --collect-all yt_dlp `
