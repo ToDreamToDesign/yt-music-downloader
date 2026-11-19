@@ -19,8 +19,9 @@
 
 ## 重要設計與踩過的坑
 
-- **YouTube 擋機器人**：需要 cookies。優先讀程式同層的 `cookies.txt`，沒有才讀 Chrome 的 cookies（Chrome 執行中可能讀取失敗，需先完全關閉）。`cookies.txt` 已列入 `.gitignore`，絕不上傳。
-- **player_client 輪替**：依序嘗試 ios → android → web+android → web_safari → tv；遇到 `reload`／`requested format is not available`／`sabr` 錯誤才換下一個，其他錯誤直接拋出。
+- **YouTube 擋機器人**：需要 cookies。依序找 `cookies.txt`：程式同層 → 桌面 → 使用者資料夾（v2.1.2 起；之前只找同層，從別處執行會退回讀 Chrome 而失敗）；都沒有才讀 Chrome 的 cookies（Chrome 執行中、或新版 Chrome 的加密都可能讀取失敗）。`cookies.txt` 已列入 `.gitignore`，絕不上傳。
+- **player_client 輪替**（v2.1.2 更新）：依序嘗試「不指定（讓 yt-dlp 挑預設）」→ android → web+android → tv；遇到 `reload`／`requested format is not available`／`sabr`／`no video formats found` 才換下一個，其他錯誤直接拋出。2026-11 實測 ios、web_safari、mweb 都會回 `No video formats found`，預設端點最穩。YouTube 規則常變，失效時先用 yt-dlp 實測各端點再調整。
+- **圖示**：使用雙子座 LOGO（`logo_gemini.jpg`），`make_icon.py` 裁切並產生 `icon.ico`（v2.1.3 起），由 PyInstaller 的 `--icon` 與 `--add-data` 帶入 exe 與視窗圖示。
 - **批次清單格式**：每個網址對應上一行非網址、非 `-` 的文字當歌名，開頭編號會被去掉。
 - **音量校正**：輸出到儲存資料夾下的「已校正」子資料夾，不動原檔。
 - **預設儲存位置**：`~/Desktop/YT音樂`。
