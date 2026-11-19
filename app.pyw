@@ -28,7 +28,17 @@ NORMALIZED_SUBDIR = "已校正"
 # ("chrome", "Profile 1") 這種形式（個人檔案名稱可在 chrome://version 查看）。
 COOKIES_FROM_BROWSER = ("chrome",)
 _APP_DIR = os.path.dirname(sys.executable if getattr(sys, "frozen", False) else os.path.abspath(__file__))
-COOKIES_TXT_PATH = os.path.join(_APP_DIR, "cookies.txt")
+
+
+def find_cookies_txt():
+    """依序找 cookies.txt：程式同層 → 桌面 → 使用者資料夾。從別的位置執行 exe 時也能找到。"""
+    home = os.path.expanduser("~")
+    for folder in (_APP_DIR, os.path.join(home, "Desktop"), home):
+        path = os.path.join(folder, "cookies.txt")
+        if os.path.isfile(path):
+            return path
+    return None
+
 URL_RE = re.compile(r"^https?://")
 INVALID_CHARS_RE = re.compile(r'[\\/:*?"<>|]')
 
@@ -288,29 +298,32 @@ class DownloaderApp:
             "quiet": True,
             "no_warnings": True,
         }
-        if os.path.isfile(COOKIES_TXT_PATH):
-            base_opts["cookiefile"] = COOKIES_TXT_PATH
+        cookies_txt = find_cookies_txt()
+        if cookies_txt:
+            base_opts["cookiefile"] = cookies_txt
         else:
             base_opts["cookiesfrombrowser"] = COOKIES_FROM_BROWSER
 
         # 部分 YouTube 播放端點（player_client）近期常出現：
         #   - 「The page needs to be reloaded」（該端點解析被擋）
         #   - 「Requested format is not available」（該端點只回傳受限格式清單）
-        # 換一個端點通常就能繞過，所以依序嘗試幾種組合。ios 目前較不受
-        # PO Token 限制影響，優先放前面。
+        # 換一個端點通常就能繞過，所以依序嘗試幾種組合。None＝不指定，交給 yt-dlp
+        # 自己挑預設端點（2026-11 實測最穩，ios／web_safari／mweb 會回「No video formats found」）。
         player_client_attempts = [
-            ["ios"],
+            None,
             ["android"],
             ["web", "android"],
-            ["web_safari"],
             ["tv"],
         ]
-        RETRYABLE_ERROR_HINTS = ("reload", "requested format is not available", "sabr")
+        RETRYABLE_ERROR_HINTS = (
+            "reload", "requested format is not available", "sabr", "no video formats found",
+        )
 
         last_error = None
         for clients in player_client_attempts:
             ydl_opts = dict(base_opts)
-            ydl_opts["extractor_args"] = {"youtube": {"player_client": clients}}
+            if clients:
+                ydl_opts["extractor_args"] = {"youtube": {"player_client": clients}}
             try:
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                     info = ydl.extract_info(url, download=True)

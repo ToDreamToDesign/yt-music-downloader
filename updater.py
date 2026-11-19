@@ -13,7 +13,7 @@ import tkinter as tk
 from tkinter import messagebox
 import requests
 
-VERSION = "2.1.0"
+VERSION = "2.1.2"
 GITHUB_REPO = "ToDreamToDesign/yt-music-downloader"
 ASSET_NAME = "YT-Music-Downloader.exe"
 API_URL = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
